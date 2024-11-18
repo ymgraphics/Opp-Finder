@@ -3,6 +3,7 @@
 
 <head>
     <meta charset="UTF-8">
+    
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Exchange Super Tool</title>
     <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
@@ -19,6 +20,33 @@
     <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 </head>
 <style>
+    /* In your external stylesheet (style.css) or within <style> tags */
+
+/* For smaller screens (e.g., phones) */
+@media (max-width: 768px) {
+  .container {
+    width: 90%; /* Make the container take up more relative space */
+    margin: 0 auto; /* Center the container */
+  }
+
+  nav ul {
+    display: block; /* Stack navigation items vertically */
+  }
+
+  nav li {
+    margin-bottom: 10px; /* Add space between stacked items */
+  }
+}
+
+/* For larger screens (e.g., tablets) */
+@media (min-width: 769px) and (max-width: 1024px) { 
+  /* Styles for tablets */
+}
+
+/* For even larger screens (e.g., desktops) */
+@media (min-width: 1025px) {
+  /* Styles for desktops */
+}
     .material-symbols-outlined {
         font-variation-settings:
             'FILL'0,
