@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>React Date Picker</title>
+  <!-- Import latest Ant Design CSS -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/antd/5.7.4/reset.min.css" integrity="sha512-..." crossorigin="anonymous" referrerpolicy="no-referrer" />
+</head>
+<body>
+  <!-- Root element for React -->
+  <div id="root"></div>
+
+  <!-- React and Babel Libraries -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react/18.2.0/umd/react.development.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/react-dom/18.2.0/umd/react-dom.development.min.js" crossorigin="anonymous"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-standalone/7.17.12/babel.min.js" crossorigin="anonymous"></script>
+  <!-- Latest Ant Design Library -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/antd/5.7.4/antd.min.js" crossorigin="anonymous"></script>
+
+  <!-- React Component Code -->
+  <script type="text/babel">
+    const { DatePicker, Space } = antd;
+    const { RangePicker } = DatePicker;
+
+    const App = () => (
+      <Space direction="vertical" size={12} style={{ padding: '20px' }}>
+        <RangePicker />
+        <RangePicker showTime />
+        <RangePicker picker="week" />
+        <RangePicker picker="month" />
+        <RangePicker picker="quarter" />
+        <RangePicker
+          picker="year"
+          onFocus={(_, info) => {
+            console.log('Focus:', info.range);
+          }}
+          onBlur={(_, info) => {
+            console.log('Blur:', info.range);
+          }}
+        />
+      </Space>
+    );
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
