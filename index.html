@@ -302,8 +302,8 @@
             <div class="row">
                 <div class="col">
                     <div class="form-group">
-                        <label for="dateRange">Date Range:</label> 
-                        <input type="text" id="dateRange" class="form-control" name="dateRange" /> 
+                        <label for="dateRange">Date Range:</label>
+                        <input type="text" id="dateRange" class="form-control" name="dateRange" />
                     </div>
                 </div>
             </div>
@@ -342,11 +342,6 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.5.2/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
-        flatpickr("#dateRange", {
-    mode: "range", 
-    dateFormat: "Y-m-d", 
-    minDate: "today" // Optional: Prevent selecting past dates
-});
         const opportunitiesCardsContainer = document.getElementById('opportunitiesCards');
         const graphqlEndpoint = "https://gis-api.aiesec.org/graphql";
         const resultsPerPage = 15;
@@ -371,15 +366,16 @@
         // Fetch project list and populate dropdown
         async function fetchProjects() {
             const projectQuery = `
-                query {
-                    projectsList {
-                        id
-                        project_name
-                    }
-                }
-            `;
+        query {
+            projectsList {
+                id
+                project_name
+            }
+        }
+    `;
             try {
                 const data = await fetchData(projectQuery);
+                console.log('Fetched projects:', data.data.projectsList); // Debugging statement
                 populateProjectDropdown(data.data.projectsList);
             } catch (error) {
                 console.error('Error fetching projects:', error);
@@ -388,7 +384,7 @@
 
         function populateProjectDropdown(projects) {
             const projectSelect = document.getElementById('projectSelect');
-            projectSelect.innerHTML = ''; // Clear previous options
+            projectSelect.innerHTML = '<option value="">All Projects</option>'; // Add "All Projects" option
             projects.forEach(project => {
                 const option = new Option(project.project_name, project.id);
                 projectSelect.add(option);
@@ -413,14 +409,13 @@
 
             let filters = [];
             if (dateRange) {
-        const [startDate, endDate] = dateRange.split(' to '); // Split the date range string
-        filters.push(`earliest_start_date: { from: "${startDate}", to: "${endDate}" }`); 
-    }
+                const [startDate, endDate] = dateRange.split(' to '); // Split the date range string
+                filters.push(`earliest_start_date: { from: "${startDate}", to: "${endDate}" }`);
+            }
             if (q) filters.push(`q: "${q}"`);
-            if (projectId) filters.push(`project_id: ${projectId}`);
+            if (projectId && projectId !== "") filters.push(`project_id: ${projectId}`);
             if (sdgId) filters.push(`sdg_id: ${sdgId}`);
             if (country) filters.push(`home_mc: "${country}"`);
-
 
             const filtersString = filters.length > 0 ? `filters: { ${filters.join(", ")} }` : '';
 
@@ -430,17 +425,17 @@
         ${filtersString}
       ) {
         data {
-          cover_photo(cdn_links: true) 
+          cover_photo(cdn_links: true)
           id
           project_description
           host_lc { name }
           home_mc { name }
-          project { 
+          project {
             id
             project_name
             sdg_info {
-              sdg_target { 
-                target_id 
+              sdg_target {
+                target_id
                 goal_index
               }
             }
@@ -458,6 +453,7 @@
 
             try {
                 const data = await fetchData(opportunityQuery);
+                console.log('Fetched opportunities:', data.data.allOpportunity.data); // Debugging statement
                 opportunities = data.data.allOpportunity.data;
                 currentPage = 1;
 
@@ -465,7 +461,7 @@
                 displayOpportunities(currentPage);
             } catch (error) {
                 console.error('Error fetching opportunities:', error);
-                // Display an error message to the user (as explained in previous responses)
+                alert('Failed to fetch opportunities. Please try again later.');
             } finally {
                 // Re-enable the button and hide the spinner
                 button.disabled = false;
@@ -473,8 +469,6 @@
                 buttonText.textContent = 'Find Opportunities';
             }
         }
-
-
 
         // Setup unique SDGs and countries for dropdowns
         function setupFilters() {
@@ -496,18 +490,6 @@
             populateCountryDropdown([...countrySet]);
         }
 
-        function populateProjectDropdown(projects) {
-            const projectSelect = document.getElementById('projectSelect');
-            projectSelect.innerHTML = '<option value="">All Projects</option>'; // Add "All Projects" option
-            projects.forEach(project => {
-                const option = new Option(project.project_name, project.id);
-                projectSelect.add(option);
-            });
-        }
-
-
-
-        // Populate SDG dropdown
         // Populate SDG dropdown
         function populateSDGDropdown(sdgs) {
             const sdgSelect = document.getElementById('sdgSelect');
@@ -517,7 +499,6 @@
                 sdgSelect.add(option);
             });
         }
-
 
         // Populate country dropdown
         function populateCountryDropdown(countries) {
@@ -529,11 +510,11 @@
             });
         }
 
-
         // Filter opportunities based on selected SDG and country
         function filterOpportunities() {
             const selectedSDG = document.getElementById('sdgSelect').value;
             const selectedCountry = document.getElementById('countrySelect').value;
+            const selectedProject = document.getElementById('projectSelect').value;
 
             const filteredOpportunities = opportunities.filter(opportunity => {
                 const matchesSDG = !selectedSDG ||
@@ -546,7 +527,11 @@
                     (opportunity.home_mc &&
                         opportunity.home_mc.name === selectedCountry);
 
-                return matchesSDG && matchesCountry;
+                const matchesProject = !selectedProject ||
+                    (opportunity.project &&
+                        opportunity.project.id === selectedProject);
+
+                return matchesSDG && matchesCountry && matchesProject;
             });
 
             currentPage = 1; // Reset to the first page
@@ -561,13 +546,13 @@
 
         // Display opportunities in Bootstrap cards with pagination
         function displayOpportunities(page, opportunitiesToDisplay = opportunities) {
-    console.log("Opportunities:", opportunitiesToDisplay); // Check if data is here
+            console.log("Opportunities:", opportunitiesToDisplay); // Check if data is here
 
-    const cardsDiv = document.getElementById('opportunitiesCards');
-    cardsDiv.innerHTML = '';
+            const cardsDiv = document.getElementById('opportunitiesCards');
+            cardsDiv.innerHTML = '';
 
             if (opportunitiesToDisplay.length === 0) {
-                cardsDiv.innerHTML = '"<p>No opportunities found.</p>"';
+                cardsDiv.innerHTML = '<p>No opportunities found.</p>';
                 return;
             }
 
@@ -592,11 +577,10 @@
             <div class="card h-100 card h-100 position-relative" data-aos="fade-up">
                 <img src="${imagePath}" loading="lazy" class="card-img-top" alt="SDG Target Image" width=304px height=106px>
                 <div class="card-body">
-                                        <h5 class="card-title">
-                                                                    ${opportunity.project.project_name}
-                                                                         <img src="${sdgImagePath}" alt="SDG Icon" style="width: 18%;  margin-right: 5px; vertical-align: middle;">
+                    <h5 class="card-title">
+                        ${opportunity.project.project_name}
+                        <img src="${sdgImagePath}" alt="SDG Icon" style="width: 18%;  margin-right: 5px; vertical-align: middle;">
                     </h5>
-                                       
                     <p class="card-text" id="description-${opportunity.id}">
                         <span class="truncated-text" id="truncated-text-${opportunity.id}">${opportunity.project_description.slice(0, 100)}...</span>
                         <span class="full-text d-none" id="full-text-${opportunity.id}">${opportunity.project_description}</span>
@@ -609,25 +593,21 @@
                         <strong>Home MC:</strong> ${opportunity.home_mc.name}<br>
                         <strong>Location:</strong> ${opportunity.location}<br>
                         <strong>Company:</strong> ${opportunity.branch.company.name}<br>
-                        
                         <button class="btn btn-link p-0" onclick="toggleSlots('${opportunity.id}'); return false;">
-    ${availableSlots.length} slots available
-</button>
-<div id="slots-${opportunity.id}" class="collapse">
-    <ul class="list-unstyled mt-2">
-        ${availableSlots.map(slot => `<li>${slot}</li>`).join('') || '<li>No slots available</li>'}
-    </ul>
-</div>
-
+                            ${availableSlots.length} slots available
+                        </button>
+                        <div id="slots-${opportunity.id}" class="collapse">
+                            <ul class="list-unstyled mt-2">
+                                ${availableSlots.map(slot => `<li>${slot}</li>`).join('') || '<li>No slots available</li>'}
+                            </ul>
+                        </div>
                     </p>
                 </div>
                 <div class="card-footer">
                     <a href="https://aiesec.org/opportunity/global-volunteer/${opportunity.id}" target="_blank" class="btn btn-info">View Opportunity</a>
                     <img src="https://aiesec-logos.s3.eu-west-1.amazonaws.com/GV%20VERTICAL%20COLOR.png" alt="Opportunity Badge" class="badge-image">
-</div>
                 </div>
             </div>
-            
         `;
                 cardsDiv.appendChild(card);
             });
@@ -653,10 +633,6 @@
                 }
             });
         });
-
-
-
-
 
         // Setup pagination controls
         function setupPagination(totalResults) {
@@ -684,7 +660,6 @@
                 pagination.appendChild(li);
             }
         }
-
 
         // Fetch projects on page load
         fetchProjects();
@@ -766,6 +741,7 @@
                 return null;
             }
         };
+
         document.querySelectorAll('a[href^="#"]').forEach(anchor => {
             anchor.addEventListener('click', function (e) {
                 e.preventDefault();
